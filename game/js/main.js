@@ -1,171 +1,40 @@
+import GameEngine from '../engine/game-engine.js'
+import GameObject from '../engine/game-object.js'
+import GameObjectComponent from '../engine/game-object-component.js'
+// import GameObjectManager from '../engine/game-object-manager.js'
+
+import CubeGameObject from './cube-game-object.js'
 import * as THREE from '../vendor/three.js/build/three.module.js';
-
 import { BoxLineGeometry } from '../vendor/three.js/examples/jsm/geometries/BoxLineGeometry.js';
-import { VRButton } from '../vendor/three.js/examples/jsm/webxr/VRButton.js';
-import { XRControllerModelFactory } from '../vendor/three.js/examples/jsm/webxr/XRControllerModelFactory.js';
-
-
-let camera, scene, raycaster, renderer;
-
-let cubesObject3D = []
-
-let controller;
-
-init();
-renderer.setAnimationLoop(render)
 
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
-//	init()
+//	
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
 
-function init() {
 
-	let container = document.createElement('div')
-	document.body.appendChild(container)
+// init GameEngine
+let gameEngine = new GameEngine()
 
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-	//	scene/camera
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-	
-	scene = new THREE.Scene()
-	scene.background = new THREE.Color(0x505050)
-
-	camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 10)
-	camera.position.set(0, 1.6, 3)
-	scene.add(camera)
+// create room itself
+let roomObject3D = new THREE.LineSegments(
+	new BoxLineGeometry(6, 6, 6, 10, 10, 10).translate(0, 3, 0),
+	new THREE.LineBasicMaterial({ color: 0x808080 })
+);
+gameEngine.scene.add(roomObject3D);
 
 
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-	//	Renderer
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
+// start animation loop
+gameEngine.renderer.setAnimationLoop(render)
 
-	renderer = new THREE.WebGLRenderer({ antialias: true });
-	renderer.setPixelRatio(window.devicePixelRatio);
-	renderer.setSize(window.innerWidth, window.innerHeight);
-	renderer.outputEncoding = THREE.sRGBEncoding;
-	renderer.xr.enabled = true;
-	container.appendChild(renderer.domElement);
-
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-	//	Lights
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-
-	scene.add(new THREE.HemisphereLight(0x606060, 0x404040));
-
-	const light = new THREE.DirectionalLight(0xffffff);
-	light.position.set(1, 1, 1).normalize();
-	scene.add(light);
-
-
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-	//	roomObject3D
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-
-	let roomObject3D = new THREE.LineSegments(
-		new BoxLineGeometry(6, 6, 6, 10, 10, 10).translate(0, 3, 0),
-		new THREE.LineBasicMaterial({ color: 0x808080 })
-	);
-	scene.add(roomObject3D);
-
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-	//	cubesObject3D
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-
-	cubesObject3D = createAllCubes()
-	for(let cubeObject3D of cubesObject3D){
-		roomObject3D.add(cubeObject3D)
-	}
-
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-	//	Raycaster
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-	
-	raycaster = new THREE.Raycaster();
-
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-	//	controller
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-
-
-	controller = renderer.xr.getController(0);
-	scene.add(controller);
-
-	let controllerObject3D = null
-	controller.addEventListener('connected', function (event) {
-		let xrInputSource = event.data
-		if (xrInputSource.targetRayMode === 'tracked-pointer') {
-			let geometry = new THREE.BufferGeometry();
-			geometry.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 0, 0, - 1], 3));
-			geometry.setAttribute('color', new THREE.Float32BufferAttribute([0.5, 0.5, 0.5, 0, 0, 0], 3));
-			let material = new THREE.LineBasicMaterial({ vertexColors: true, blending: THREE.AdditiveBlending });
-			controllerObject3D = new THREE.Line(geometry, material);
-		} else if (xrInputSource.targetRayMode === 'gaze') {
-			let geometry = new THREE.RingBufferGeometry(0.02, 0.04, 32).translate(0, 0, - 1);
-			let material = new THREE.MeshBasicMaterial({ opacity: 0.5, transparent: true });
-			controllerObject3D = new THREE.Mesh(geometry, material);
-		}
-		this.add(controllerObject3D);
-	});
-	controller.addEventListener('disconnected', function () {
-		this.remove(controllerObject3D);
-	});
-
-
-	// add controlerModel to controllerGrip 0
-	let controllerGrip = renderer.xr.getControllerGrip(0);
-	const controllerModelFactory = new XRControllerModelFactory();
-	let controlerModel = controllerModelFactory.createControllerModel(controllerGrip)
-	controllerGrip.add(controlerModel);
-	scene.add(controllerGrip)
-
-	// set controller.userData.isSelecting to true when controller is using select button
-	controller.addEventListener('selectstart', function onSelectStart() {
-		controller.userData.isSelecting = true;
-	})
-	controller.addEventListener('selectend', function onSelectEnd() {
-		controller.userData.isSelecting = false;
-	})
-
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-	//	window resize
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-
-	window.addEventListener('resize', function onWindowResize() {
-		camera.aspect = window.innerWidth / window.innerHeight;
-		camera.updateProjectionMatrix()
-
-		renderer.setSize(window.innerWidth, window.innerHeight)
-	}, false)
-
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-	//	VRButton
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-
-	// add VRButton
-	document.body.appendChild(VRButton.createButton(renderer))
+let cubesGameObjects = []
+for (let i = 0; i < 200; i++) {
+	let cubeGameObject = new CubeGameObject()
+	roomObject3D.add(cubeGameObject.object3D)
+	gameEngine.addGameObject(cubeGameObject)
+	cubesGameObjects.push(cubeGameObject)
 }
-
-
 
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
@@ -173,12 +42,12 @@ function init() {
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
 
-const clock = new THREE.Clock();
+const clock = new THREE.Clock()
 let INTERSECTED;
+let raycaster = new THREE.Raycaster()
+
 
 function render() {
-
-	const deltaTime = clock.getDelta();
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -186,65 +55,18 @@ function render() {
 	/////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////
 
-	if (controller.userData.isSelecting === true) {
+	if (gameEngine.controller.userData.isSelecting === true) {
 		// take old cube
-		let cubeObject3D = cubesObject3D.shift();
-		let parentObject3D = cubeObject3D.parent
-		parentObject3D.remove(cubeObject3D);
+		let cubeGameObject = cubesGameObjects.shift()
+		let parentObject3D = cubeGameObject.object3D.parent
+		parentObject3D.remove(cubeGameObject.object3D)
+
 
 		// generate 'new' cube
-		cubeObject3D.position.copy(controller.position);
-		cubeObject3D.userData.velocity.x = (Math.random() - 0.5) * 0.02 * deltaTime * 60;
-		cubeObject3D.userData.velocity.y = (Math.random() - 0.5) * 0.02 * deltaTime * 60;
-		cubeObject3D.userData.velocity.z = (Math.random() * 0.01 - 0.05) * deltaTime * 60;
-		cubeObject3D.userData.velocity.applyQuaternion(controller.quaternion);
-		cubesObject3D.push(cubeObject3D)
-		parentObject3D.add(cubeObject3D)
+		cubeGameObject.resetPosition()
+		cubesGameObjects.push(cubeGameObject)
+		parentObject3D.add(cubeGameObject.object3D)
 	}
-
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-	//	Intersections
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-
-	// find intersections
-
-	const tempMatrix = new THREE.Matrix4();
-	tempMatrix.identity().extractRotation(controller.matrixWorld);
-
-	raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
-	raycaster.ray.direction.set(0, 0, - 1).applyMatrix4(tempMatrix);
-
-	const intersects = raycaster.intersectObjects(cubesObject3D);
-
-	if (intersects.length > 0) {
-
-		if (INTERSECTED != intersects[0].object) {
-
-			if (INTERSECTED) INTERSECTED.material.emissive.setHex(INTERSECTED.userData.currentHex);
-
-			INTERSECTED = intersects[0].object;
-			INTERSECTED.userData.currentHex = INTERSECTED.material.emissive.getHex();
-			INTERSECTED.material.emissive.setHex(0xff0000);
-
-		}
-
-	} else {
-
-		if (INTERSECTED) INTERSECTED.material.emissive.setHex(INTERSECTED.userData.currentHex);
-
-		INTERSECTED = undefined;
-
-	}
-
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-	//	Keep cubes inside roomObject3D
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-
-	updateAllCubes(deltaTime)
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -252,88 +74,6 @@ function render() {
 	/////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////
 
-	renderer.render(scene, camera);
-
-}
-
-/////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
-//	
-/////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
-
-function createAllCubes(){
-	let cubesObject3D = []
-	const geometry = new THREE.BoxBufferGeometry(0.15, 0.15, 0.15);
-
-	for (let i = 0; i < 200; i++) {
-
-		const cubeObject3D = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff }));
-
-		cubeObject3D.position.x = Math.random() * 4 - 2;
-		cubeObject3D.position.y = Math.random() * 4;
-		cubeObject3D.position.z = Math.random() * 4 - 2;
-
-		cubeObject3D.rotation.x = Math.random() * 2 * Math.PI;
-		cubeObject3D.rotation.y = Math.random() * 2 * Math.PI;
-		cubeObject3D.rotation.z = Math.random() * 2 * Math.PI;
-
-		cubeObject3D.scale.x = Math.random() + 0.5;
-		cubeObject3D.scale.y = Math.random() + 0.5;
-		cubeObject3D.scale.z = Math.random() + 0.5;
-
-		cubeObject3D.userData.velocity = new THREE.Vector3();
-		cubeObject3D.userData.velocity.x = Math.random() * 0.01 - 0.005;
-		cubeObject3D.userData.velocity.y = Math.random() * 0.01 - 0.005;
-		cubeObject3D.userData.velocity.z = Math.random() * 0.01 - 0.005;
-
-		cubesObject3D.push(cubeObject3D)
-	}
-	return cubesObject3D
-}
-/////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
-//	
-/////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
-
-
-/**
- * 
- * @param {number} deltaTime 
- */
-function updateAllCubes(deltaTime){
-	for (let i = 0; i < cubesObject3D.length; i++) {
-
-		const cubeObject3D = cubesObject3D[i];
-
-		cubeObject3D.userData.velocity.multiplyScalar(1 - (0.001 * deltaTime));
-
-		cubeObject3D.position.add(cubeObject3D.userData.velocity);
-
-		if (cubeObject3D.position.x < - 3 || cubeObject3D.position.x > 3) {
-
-			cubeObject3D.position.x = THREE.MathUtils.clamp(cubeObject3D.position.x, - 3, 3);
-			cubeObject3D.userData.velocity.x = - cubeObject3D.userData.velocity.x;
-
-		}
-
-		if (cubeObject3D.position.y < 0 || cubeObject3D.position.y > 6) {
-
-			cubeObject3D.position.y = THREE.MathUtils.clamp(cubeObject3D.position.y, 0, 6);
-			cubeObject3D.userData.velocity.y = - cubeObject3D.userData.velocity.y;
-
-		}
-
-		if (cubeObject3D.position.z < - 3 || cubeObject3D.position.z > 3) {
-
-			cubeObject3D.position.z = THREE.MathUtils.clamp(cubeObject3D.position.z, - 3, 3);
-			cubeObject3D.userData.velocity.z = - cubeObject3D.userData.velocity.z;
-
-		}
-
-		cubeObject3D.rotation.x += cubeObject3D.userData.velocity.x * 2 * deltaTime;
-		cubeObject3D.rotation.y += cubeObject3D.userData.velocity.y * 2 * deltaTime;
-		cubeObject3D.rotation.z += cubeObject3D.userData.velocity.z * 2 * deltaTime;
-	}
+	gameEngine.update()
+	gameEngine.render()
 }

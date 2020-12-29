@@ -1,0 +1,9 @@
+{
+	"compilerOptions": {
+		"checkJs": true,
+		"target": "es6",
+		"skipLibCheck": true,
+	},
+	"include": ["game/**/*"],
+	"exclude": ["node_modules"]
+}
