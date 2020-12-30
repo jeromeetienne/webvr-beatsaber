@@ -4,11 +4,19 @@ import GameObjectComponent from './game-object-component.js'
 import * as THREE from '../vendor/three.js/build/three.module.js';
 
 export default class GameObject {
-	constructor() {
-		/** @type {GameEngine} */
-		this.gameEngine = null
+	/**
+	 * 
+	 * @param {GameEngine} gameEngine 
+	 */
+	constructor(gameEngine) {
+		this.gameEngine = gameEngine
 		this.components = [];
 		this.object3D = new THREE.Object3D();
+		this.object3D.userData.gameObject = this
+	}
+
+	async init(){
+
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -31,16 +39,21 @@ export default class GameObject {
 		return this.components.find(c => c instanceof ComponentType);
 	}
 
+	updateComponents() {
+		let components = [...this.components]
+		for (const component of components) {
+			component.update();
+		}
+	}
+
 	/////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////
 	//	
 	/////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////
-
-	update() {
-		let components = [...this.components]
-		for (const component of components) {
-			component.update();
-		}
+	
+	// TODO to rename onUpdate()
+	update(){
+		
 	}
 }

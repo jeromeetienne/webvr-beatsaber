@@ -1,13 +1,48 @@
+import ControllerGameObject from './controller-game-object.js'
+
+// import GameEngine
+import GameEngine from '../engine/game-engine.js'
 import GameObject from '../engine/game-object.js'
 
+// import three.js
 import * as THREE from '../vendor/three.js/build/three.module.js';
 
 const cubeGeometry = new THREE.BoxBufferGeometry(0.15, 0.15, 0.15)
 
-export default class CubeObject extends GameObject {
-	constructor(){
-		super()
+export default class CubeGameObject extends GameObject {
+	/**
+	 * 
+	 * @param {GameEngine} gameEngine 
+	 */
+	constructor(gameEngine){
+		super(gameEngine)
 
+
+		/////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////
+		//	
+		/////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////
+		
+		const audioLoader = new THREE.AudioLoader();
+		this.positionalAudio = new THREE.PositionalAudio( this.gameEngine.audioListener );
+		audioLoader.load( 'sounds/ping_pong.mp3',  ( buffer ) => {
+			this.positionalAudio.setBuffer( buffer );
+		})
+
+		/**
+		 * - if you have audioBuffer !== null, so promise has been settled, so set audioBuffer
+		 * - else audioBufferPromise === null, so you create a promise which load the buffer 
+		 * - else you have audioBufferPromise !== null, so you do .then(), and set audioBuffer
+		 */
+
+
+		/////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////
+		//	
+		/////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////
+		
 		let material = new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff })
 		const mesh = new THREE.Mesh(cubeGeometry, material)
 		this.object3D.add(mesh)
@@ -24,11 +59,17 @@ export default class CubeObject extends GameObject {
 		this.object3D.scale.y = Math.random() + 0.5;
 		this.object3D.scale.z = Math.random() + 0.5;
 
+
+		/////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////
+		//	
+		/////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////
+		
 		this.object3D.userData.velocity = new THREE.Vector3()
 		this.object3D.userData.velocity.x = Math.random() * 0.01 - 0.005;
 		this.object3D.userData.velocity.y = Math.random() * 0.01 - 0.005;
 		this.object3D.userData.velocity.z = Math.random() * 0.01 - 0.005;
-
 	}
 
 
@@ -39,11 +80,9 @@ export default class CubeObject extends GameObject {
 	/////////////////////////////////////////////////////////////////////////////////////
 	
 	update(){
-		let deltaTime = this.gameEngine.deltaTime
-		// console.log('deltaTime', deltaTime)
-		this.object3D.userData.velocity.multiplyScalar(1 - (0.001 * deltaTime))
+		let deltaTime = this.gameEngine.updateData.deltaTime
 
-		this.object3D.position.add(this.object3D.userData.velocity)
+		// this.object3D.position.add(this.object3D.userData.velocity)
 
 		if (this.object3D.position.x < - 3 || this.object3D.position.x > 3) {
 
@@ -78,11 +117,15 @@ export default class CubeObject extends GameObject {
 	/////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////
 	
-	resetPosition(){
-		this.object3D.position.copy(this.gameEngine.controller.position)
+	/**
+	 * 
+	 * @param {ControllerGameObject} controllerGameObject 
+	 */
+	resetPosition(controllerGameObject){
+		this.object3D.position.copy(controllerGameObject.controller.position)
 		this.object3D.userData.velocity.x = (Math.random() - 0.5) * 0.02
 		this.object3D.userData.velocity.y = (Math.random() - 0.5) * 0.02
 		this.object3D.userData.velocity.z = Math.random() * 0.01 - 0.05
-		this.object3D.userData.velocity.applyQuaternion(this.gameEngine.controller.quaternion)
+		this.object3D.userData.velocity.applyQuaternion(controllerGameObject.controller.quaternion)
 	}
 }

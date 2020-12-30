@@ -6,15 +6,20 @@ import { XRControllerModelFactory } from '../vendor/three.js/examples/jsm/webxr/
 
 export default class GameEngine {
 	constructor() {
+		this.userData = {}
+
 		this.scene = null
 		this.renderer = null
 		this.camera = null
-		this.controller = null
+		// this.controller = null	// TODO remove controller
 
 		/** @type {GameObject[]} */
 		this.gameObjects = [];
 		this._clock = new THREE.Clock()
-		this.deltaTime = null
+
+		this.updateData = {
+			deltaTime : 1/60
+		}
 
 		this._init()
 	}
@@ -50,6 +55,10 @@ export default class GameEngine {
 		camera.position.set(0, 1.6, 3)
 		scene.add(camera)
 
+		// create an AudioListener and add it to the camera
+		const audioListener = new THREE.AudioListener();
+		this.audioListener = audioListener
+		this.camera.add( audioListener );
 
 		/////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////
@@ -65,64 +74,53 @@ export default class GameEngine {
 		renderer.xr.enabled = true;
 		container.appendChild(renderer.domElement);
 
-		/////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////////////////////////////////
-		//	Lights
-		/////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////////////////////////////////
 
-		scene.add(new THREE.HemisphereLight(0x606060, 0x404040));
+		// /////////////////////////////////////////////////////////////////////////////////////
+		// /////////////////////////////////////////////////////////////////////////////////////
+		// //	controller
+		// /////////////////////////////////////////////////////////////////////////////////////
+		// /////////////////////////////////////////////////////////////////////////////////////
+		// // TODO remove controller
 
-		const light = new THREE.DirectionalLight(0xffffff);
-		light.position.set(1, 1, 1).normalize();
-		scene.add(light);
+		// this.controller = renderer.xr.getController(0);
+		// let controller = this.controller
+		// scene.add(controller);
 
-
-		/////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////////////////////////////////
-		//	controller
-		/////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////////////////////////////////
-
-		this.controller = renderer.xr.getController(0);
-		let controller = this.controller
-		scene.add(controller);
-
-		let controllerObject3D = null
-		controller.addEventListener('connected', function (event) {
-			let xrInputSource = event.data
-			if (xrInputSource.targetRayMode === 'tracked-pointer') {
-				let geometry = new THREE.BufferGeometry();
-				geometry.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 0, 0, - 1], 3));
-				geometry.setAttribute('color', new THREE.Float32BufferAttribute([0.5, 0.5, 0.5, 0, 0, 0], 3));
-				let material = new THREE.LineBasicMaterial({ vertexColors: true, blending: THREE.AdditiveBlending });
-				controllerObject3D = new THREE.Line(geometry, material);
-			} else if (xrInputSource.targetRayMode === 'gaze') {
-				let geometry = new THREE.RingBufferGeometry(0.02, 0.04, 32).translate(0, 0, - 1);
-				let material = new THREE.MeshBasicMaterial({ opacity: 0.5, transparent: true });
-				controllerObject3D = new THREE.Mesh(geometry, material);
-			}
-			this.add(controllerObject3D);
-		});
-		controller.addEventListener('disconnected', function () {
-			this.remove(controllerObject3D);
-		});
+		// let controllerObject3D = null
+		// controller.addEventListener('connected', function (event) {
+		// 	let xrInputSource = event.data
+		// 	if (xrInputSource.targetRayMode === 'tracked-pointer') {
+		// 		let geometry = new THREE.BufferGeometry();
+		// 		geometry.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 0, 0, - 1], 3));
+		// 		geometry.setAttribute('color', new THREE.Float32BufferAttribute([0.5, 0.5, 0.5, 0, 0, 0], 3));
+		// 		let material = new THREE.LineBasicMaterial({ vertexColors: true, blending: THREE.AdditiveBlending });
+		// 		controllerObject3D = new THREE.Line(geometry, material);
+		// 	} else if (xrInputSource.targetRayMode === 'gaze') {
+		// 		let geometry = new THREE.RingBufferGeometry(0.02, 0.04, 32).translate(0, 0, - 1);
+		// 		let material = new THREE.MeshBasicMaterial({ opacity: 0.5, transparent: true });
+		// 		controllerObject3D = new THREE.Mesh(geometry, material);
+		// 	}
+		// 	this.add(controllerObject3D);
+		// });
+		// controller.addEventListener('disconnected', function () {
+		// 	this.remove(controllerObject3D);
+		// });
 
 
-		// add controlerModel to controllerGrip 0
-		let controllerGrip = renderer.xr.getControllerGrip(0);
-		const controllerModelFactory = new XRControllerModelFactory();
-		let controlerModel = controllerModelFactory.createControllerModel(controllerGrip)
-		controllerGrip.add(controlerModel);
-		scene.add(controllerGrip)
+		// // add controlerModel to controllerGrip 0
+		// let controllerGrip = renderer.xr.getControllerGrip(0);
+		// const controllerModelFactory = new XRControllerModelFactory();
+		// let controlerModel = controllerModelFactory.createControllerModel(controllerGrip)
+		// controllerGrip.add(controlerModel);
+		// scene.add(controllerGrip)
 
-		// set controller.userData.isSelecting to true when controller is using select button
-		controller.addEventListener('selectstart', function onSelectStart() {
-			controller.userData.isSelecting = true;
-		})
-		controller.addEventListener('selectend', function onSelectEnd() {
-			controller.userData.isSelecting = false;
-		})
+		// // set controller.userData.isSelecting to true when controller is using select button
+		// controller.addEventListener('selectstart', function onSelectStart() {
+		// 	controller.userData.isSelecting = true;
+		// })
+		// controller.addEventListener('selectend', function onSelectEnd() {
+		// 	controller.userData.isSelecting = false;
+		// })
 
 		/////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////
@@ -171,8 +169,6 @@ export default class GameEngine {
 	 * @param {GameObject} gameObject 
 	 */
 	addGameObject(gameObject) {
-		console.assert(gameObject.gameEngine === null)
-		gameObject.gameEngine = this
 		this.gameObjects.push(gameObject);
 	}
 
@@ -183,7 +179,6 @@ export default class GameEngine {
 	removeGameObject(gameObject) {
 		const index = this.gameObjects.indexOf(gameObject);
 		if (index === -1) return
-		console.assert(gameObject.gameEngine !== null)
 		this.gameObjects.splice(index, 1);
 	}
 
@@ -194,15 +189,15 @@ export default class GameEngine {
 	/////////////////////////////////////////////////////////////////////////////////////
 	
 
-	update() {
-		this.deltaTime = this._clock.getDelta()
+	updateGameObjects() {
+		this.updateData.deltaTime = this._clock.getDelta()
 
 		let gameObjects = [...this.gameObjects]
 		for(let gameObject of gameObjects){
+			gameObject.updateComponents()
 			gameObject.update()
 		}
 
-
-		this.deltaTime = null
+		this.updateData.deltaTime = null
 	}
 }
