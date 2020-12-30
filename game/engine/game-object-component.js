@@ -10,6 +10,6 @@ export default class GameComponent {
 		this.gameObject = gameObject;
 	}
 
-	update() {
+	onUpdate() {
 	}
 }

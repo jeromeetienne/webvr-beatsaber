@@ -62,7 +62,7 @@ export default class ControllerGameObject extends GameObject {
 		})
 	}
 
-	update() {
+	onUpdate() {
 		/** @type {SaberGame} */
 		let saberGame = this.gameEngine.userData.saberGame
 
@@ -88,6 +88,7 @@ export default class ControllerGameObject extends GameObject {
 		/////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////
 
+		// setup raycaster
 		raycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld)
 		const tempMatrix = new THREE.Matrix4()
 		tempMatrix.identity().extractRotation(this.controller.matrixWorld)
@@ -106,42 +107,5 @@ export default class ControllerGameObject extends GameObject {
 				cubeGameObject.object3D.position.z = Math.random() * 4 - 2;
 			}
 		}
-
-		// let cubesObject3D = saberGame.cubesGameObjects.map(cubeGameObject => cubeGameObject.object3D)
-		// const intersects = raycaster.intersectObjects(cubesObject3D, true)
-
-		// if (intersects.length > 0) {
-		// 	if (this._intersectedObject3D != intersects[0].object) {
-
-		// 		if (this._intersectedObject3D) this._intersectedObject3D.material.emissive.setHex(this._intersectedObject3D.userData.currentHex)
-
-		// 		this._intersectedObject3D = intersects[0].object;
-		// 		this._intersectedObject3D.userData.currentHex = this._intersectedObject3D.material.emissive.getHex()
-		// 		this._intersectedObject3D.material.emissive.setHex(0xff0000)
-
-		// 		/** @type {CubeGameObject} */
-		// 		// // debugger
-		// 		// console.assert(this._intersectedObject3D.userData.gameObject!== undefined)
-		// 		// let cubeGameObject = this._intersectedObject3D.userData.gameObject
-		// 		// cubeGameObject.positionalAudio.play()
-		// 	}
-
-		// } else {
-
-		// 	if (this._intersectedObject3D) this._intersectedObject3D.material.emissive.setHex(this._intersectedObject3D.userData.currentHex)
-
-		// 	this._intersectedObject3D = undefined;
-
-		// }
-	}
-
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-	//	
-	/////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-
-	onIntersectSaber() {
-
 	}
 }

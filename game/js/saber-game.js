@@ -1,6 +1,8 @@
 import GameEngine from '../engine/game-engine.js'
 import CubeGameObject from './cube-game-object.js'
 import ControllerGameObject from './controller-game-object.js'
+import GroundGameObject from './ground-game-object.js'
+import TubeGameObject from './tube-game-object.js'
 
 // import three.js
 import * as THREE from '../vendor/three.js/build/three.module.js';
@@ -30,13 +32,16 @@ export default class SaberGame {
 		light.position.set(1, 1, 1).normalize();
 		this.gameEngine.scene.add(light);
 
-
 		// create roomObject3D
 		this.roomObject3D = new THREE.LineSegments(
-			new BoxLineGeometry(6, 6, 6, 10, 10, 10).translate(0, 3, 0),
+			new BoxLineGeometry(6, 6, 6, 12, 12, 12).translate(0, 3, 0),
 			new THREE.LineBasicMaterial({ color: 0x808080 })
 		);
 		this.gameEngine.scene.add(this.roomObject3D);
+
+		var geometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
+		var material = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
+		var skyBox = new THREE.Mesh( geometry, material );
 
 		// add all the cubes
 		/** @type {CubeGameObject[]} */
@@ -47,6 +52,15 @@ export default class SaberGame {
 			this.gameEngine.addGameObject(cubeGameObject)
 			this.cubesGameObjects.push(cubeGameObject)
 		}
+
+
+		let groundGameObject = new GroundGameObject(this.gameEngine)
+		this.roomObject3D.add(groundGameObject.object3D)
+		this.gameEngine.addGameObject(groundGameObject)
+
+		let tubeGameObject = new TubeGameObject(this.gameEngine)
+		this.roomObject3D.add(tubeGameObject.object3D)
+		this.gameEngine.addGameObject(tubeGameObject)
 
 		/////////////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////////////

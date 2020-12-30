@@ -42,7 +42,7 @@ export default class GameObject {
 	updateComponents() {
 		let components = [...this.components]
 		for (const component of components) {
-			component.update();
+			component.onUpdate();
 		}
 	}
 
@@ -52,8 +52,8 @@ export default class GameObject {
 	/////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////
 	
-	// TODO to rename onUpdate()
-	update(){
+	// TODO to rename ononUpdate()
+	onUpdate(){
 		
 	}
 }

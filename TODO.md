@@ -1,10 +1,10 @@
-- code cube movement from back to front
 - make decor for the room
 - make the moving road on the ground
 - dont load audio buffer, once per cube
 - move ControllerGameObject and CubeGameObject as components?
   - nobody use components at the moments
   - and you overload GameObject.. what about overloading GameComponents instead ?
+- DONE code cube movement from back to front
 - DONE make a sound on saber/cube intersection
 - DONE make a saber-game-object
   - DONE it compute if there is an intersection with a cube-game-object
