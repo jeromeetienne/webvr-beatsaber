@@ -1,11 +1,9 @@
-import ControllerGameObject from './controller-game-object.js'
-
 // import GameEngine
-import GameEngine from '../engine/game-engine.js'
-import GameObject from '../engine/game-object.js'
+import GameEngine from '../../engine/game-engine.js'
+import GameObject from '../../engine/game-object.js'
 
 // import three.js
-import * as THREE from '../vendor/three.js/build/three.module.js';
+import * as THREE from '../../vendor/three.js/build/three.module.js';
 
 const cubeGeometry = new THREE.BoxBufferGeometry(0.15, 0.15, 0.15)
 

@@ -1,11 +1,10 @@
-import SaberGame from './saber-game.js'
+import SaberGame from '../saber-game.js'
 
-import GameEngine from '../engine/game-engine.js'
-import GameObject from '../engine/game-object.js'
+import GameEngine from '../../engine/game-engine.js'
+import GameObject from '../../engine/game-object.js'
 
-import * as THREE from '../vendor/three.js/build/three.module.js';
-import { XRControllerModelFactory } from '../vendor/three.js/examples/jsm/webxr/XRControllerModelFactory.js';
-import CubeGameObject from './cube-game-object.js';
+import * as THREE from '../../vendor/three.js/build/three.module.js';
+import { XRControllerModelFactory } from '../../vendor/three.js/examples/jsm/webxr/XRControllerModelFactory.js';
 
 const cubeGeometry = new THREE.BoxBufferGeometry(0.15, 0.15, 0.15)
 let raycaster = new THREE.Raycaster()

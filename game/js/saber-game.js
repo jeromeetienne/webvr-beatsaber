@@ -1,8 +1,8 @@
 import GameEngine from '../engine/game-engine.js'
-import CubeGameObject from './cube-game-object.js'
-import ControllerGameObject from './controller-game-object.js'
-import GroundGameObject from './ground-game-object.js'
-import TubeGameObject from './tube-game-object.js'
+import CubeGameObject from './game-objects/cube-game-object.js'
+import ControllerGameObject from './game-objects/controller-game-object.js'
+import GroundGameObject from './game-objects/ground-game-object.js'
+import TubeGameObject from './game-objects/tube-game-object.js'
 
 // import three.js
 import * as THREE from '../vendor/three.js/build/three.module.js';
